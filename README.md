@@ -1,4 +1,10 @@
-# Tuto: créer un serveur node js et retourner un fichier ou des valeurs
+# Node JS : créer un serveur node js et retourner un ou plusieurs fichiers
+
+## Présentation :
+
+> [Node](https://nodejs.org/) (ou plus formellement *Node.js*) est un environnement d'exécution open-source, multi-plateforme, qui permet aux développeuses et développeurs de créer toutes sortes d'applications et d'outils côté serveur en [JavaScript](https://developer.mozilla.org/fr/docs/Glossary/JavaScript)
+. Cet environnement est destiné à être utilisé en dehors du navigateur (il s'exécute directement sur son ordinateur ou dans le système d'exploitation du serveur). Aussi, Node ne permet pas d'utiliser les API JavaScript liées au navigateur mais des API plus traditionnellement utilisées sur un serveur dont notamment celles pour HTTP ou la manipulation de systèmes de fichier. “mdn”
+> 
 
 # Étape 1 : utilisation du module http
 
@@ -39,7 +45,7 @@ Tout d’abord, commençons par ajouter un **en-tête HTTP** à la réponse.
 res.setHeader("Content-Type", "text/html");
 ```
 
-L’en-tête Content-Type est utilisé pour indiquer le format des données, également appelées media type, qui sont envoyées avec la requête ou la réponse.  Il existe des contents types pour tous les types de données : Audio, Vidéo, musique, text etc…  Dans notre cas, le Content-Type est text/html.
+L’en-tête Content-Type est utilisé pour indiquer le format des données, également appelées media type, qui sont envoyées avec la requête ou la réponse.  Il existe des content type pour tous les types de données : Audio, Vidéo, musique, texte, etc…  Dans notre cas, le Content-Type est text/html.
 
 ```jsx
 res.setHeader('Access-Control-Allow-Origin', '*');
@@ -102,7 +108,7 @@ http.createServer(function (req, res) {
 
 </aside>
 
-Si tout va bien, la page index.html devrait vous afficher que le serveur est allumé et vous renvoyer le code de réponse ainsi que sa signification. N’hésitez pas à tester différents codes de réponse pour voir le résultat !  
+Si tout va bien, la page index.html devrait vous afficher que le serveur est allumé et vous renvoyer le code de réponse ainsi que sa signification. N’hésitez pas à tester différent code de réponse pour voir le résultat !  
 
 Afin de faciliter la vie, nous utiliserons nodemon pour relancer automatiquement le serveur quand une mise à jour d’un des fichiers est réalisée.
 
@@ -126,7 +132,7 @@ Commençons par importer le module **fs (File Server)**, ce dernier permet grâc
 const fs = require('fs').promises;
 ```
 
-Comme vous pouvez le voir, nous ajoutons ce coup-ci **promises** à notre require. Cela nous permettra d’attendre que fs ait lu l’intégralité du fichier avant de continuer.
+Comme vous pouvez le voir nous ajoutons ce coup-ci **promises** à notre require. Cela nous permettra d’attendre que fs aient lu l’intégralité du fichier avant de continuer.
 
 ## Lecture d’un fichier
 
@@ -317,7 +323,7 @@ Ici nous utilisons **use** afin de permettre de servir les fichiers statiques co
 app.use('/images', express.static(__dirname + '/data/images'));
 ```
 
-Ajoutez ce code au-dessus d’app.listen… puis testez ! 
+Ajoutez ce code au-dessus de app.listen… puis testez ! 
 
 Pour tester, mettez une image dans le dossier /data/images et rendez-vous sur l’url : [http://localhost:8080/images/nomimage.png](http://localhost:8080/images/tablesetting.jpg) 
 
@@ -335,3 +341,126 @@ app.use('/css', express.static(__dirname + '/data/css'));
 ```
 
 Repo git : https://github.com/kevin-roda/nodejs-basic
+
+## Un peu plus loin avec express …
+
+Vous avez la possibilité de combiner les différentes requêtes sur la même url. Par exemple pour l’url /livre  : 
+
+```jsx
+app.route('/livre')
+  .get(function(req, res) {
+    res.send('On récupère un livre');
+  })
+  .post(function(req, res) {
+    res.send('On ajoute un livre');
+  })
+  .put(function(req, res) {
+    res.send('On met à jour un livre');
+  })
+	.delete(function(req, res) {
+    res.send('On supprime un livre');
+  });
+```
+
+Afin de rendre cela plus lisible, nous allons créer un module ! 
+
+## Les modules
+
+> Un module est une bibliothèque/fichier JavaScript que vous pouvez importer dans un autre code en utilisant la fonction `require()`
+ de Node. *Express*
+ lui-même est un module, tout comme les bibliothèques de *middleware*
+ et de base de données que nous utilisons dans nos applications *Express*.
+
+”mdn”
+> 
+
+On créer un fichier router.js
+
+On importe express, puis son module de gestion des routes.
+
+```jsx
+const express = require('express');
+const myRouter = express.Router();
+```
+
+On ajoute le code contenant nos routes :
+
+```jsx
+myRouter.route('/livre')
+  .get(function(req, res) {
+    res.send('On récupère un livre');
+  })
+  .post(function(req, res) {
+    res.send('On ajoute un livre');
+  })
+  .put(function(req, res) {
+    res.send('On met à jour un livre');
+  })
+	.delete(function(req, res) {
+    res.send('On supprime un livre');
+  });
+```
+
+Puis on exporte le routeur (c’est l’objet que l’on récupérera lors de l’import ) :
+
+```jsx
+module.exports = myRouter;
+```
+
+Maintenant ce module est disponible partout dans votre application, il vous suffira de l’importer comme ceci :
+
+```jsx
+const livres = require('./router');
+```
+
+Vous remarquerez qu’il n’est pas nécessaire d’ajouter l’extension .js à la fin du chemin.
+
+### Exemple complet:
+
+app.js 
+
+```jsx
+const express = require('express');
+const app = express();
+const livres = require('./router');
+
+// Nous définissons ici les paramètres du serveur.
+var hostname = '127.0.0.1';
+// var hostname = 'localhost';
+var port = 8080;
+
+app.use(livres);
+
+app.listen(port, hostname, function () {
+    console.log("Mon serveur fonctionne sur http://" + hostname + ":" + port);
+});
+```
+
+router.js
+
+```jsx
+const express = require('express');
+const myRouter = express.Router();
+
+myRouter.route('/livre')
+    .get(function (req, res) {
+        res.send('On récupère un livre');
+    })
+    .post(function (req, res) {
+        res.send('On ajoute un livre');
+    })
+    .put(function (req, res) {
+        res.send('On met à jour un livre');
+    })
+    .delete(function (req, res) {
+        res.send('On supprime un livre');
+    });
+
+module.exports = myRouter;
+```
+
+## Conclusion :
+
+Dans ce cours nous avons pris en main nodejs, au travers d’une utilisation basique.
+
+Par la suite nous regarderons comment réaliser un CRUD avec postgresql et la librairie pg.
