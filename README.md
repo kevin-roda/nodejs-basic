@@ -142,7 +142,7 @@ Afin de faciliter la vie, nous utiliserons nodemon pour relancer automatiquement
 npm i nodemon
 ```
 
-## Étape 2 : Servir un fichier avec FS
+# Étape 2 : Servir un fichier avec FS
 
 Envoyer une réponse contenant du texte est plutôt simple, seulement la plupart du temps nous préférerons renvoyer une page html complète plutôt qu’un “morceau” de code.
 
@@ -388,7 +388,7 @@ app.route('/livre')
 
 Afin de rendre cela plus lisible, nous allons créer un module ! 
 
-## Les modules
+# Les modules
 
 > Un module est une bibliothèque/fichier JavaScript que vous pouvez importer dans un autre code en utilisant la fonction `require()`
  de Node. *Express*
@@ -439,7 +439,7 @@ const livres = require('./router');
 
 Vous remarquerez qu’il n’est pas nécessaire d’ajouter l’extension .js à la fin du chemin.
 
-### Exemple complet:
+## Exemple complet:
 
 app.js 
 
@@ -483,7 +483,7 @@ myRouter.route('/livre')
 module.exports = myRouter;
 ```
 
-## Organiser son dossier serveur avec les controllers
+# Organiser son dossier serveur avec les controllers
 
 Par convention, les développeurs séparent toujours les routes créées et leurs callbacks respectifs pour une organisation optimale de leurs codes.
 
@@ -585,7 +585,7 @@ app.use(livres);
 
 ```
 
-## Bonus : Le CRUD avec postgres
+# Bonus : Le CRUD avec postgres
 
 Votre fichier **database.js** : 
 
