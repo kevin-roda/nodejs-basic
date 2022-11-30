@@ -1,5 +1,29 @@
 # Node JS : créer un serveur node js et retourner un ou plusieurs fichiers
 
+- [Node JS : créer un serveur node js et retourner un ou plusieurs fichiers](#node-js--créer-un-serveur-node-js-et-retourner-un-ou-plusieurs-fichiers)
+  - [Présentation :](#présentation-)
+- [Étape 1 : utilisation du module http](#étape-1--utilisation-du-module-http)
+    - [L’en-tête Http](#len-tête-http)
+    - [Le code de réponse](#le-code-de-réponse)
+  - [Fin de réponse](#fin-de-réponse)
+  - [Résultat final](#résultat-final)
+  - [Étape 2 : Servir un fichier avec FS](#étape-2--servir-un-fichier-avec-fs)
+  - [Le module FS](#le-module-fs)
+  - [Lecture d’un fichier](#lecture-dun-fichier)
+  - [Servir tous les fichiers](#servir-tous-les-fichiers)
+  - [Étape 3 : Utilisation d’express](#étape-3--utilisation-dexpress)
+  - [Installation](#installation)
+  - [Utilisation](#utilisation)
+  - [Traitement des différentes requêtes :](#traitement-des-différentes-requêtes-)
+    - [Servir un dossier complet :](#servir-un-dossier-complet-)
+  - [Un peu plus loin avec express …](#un-peu-plus-loin-avec-express-)
+  - [Les modules](#les-modules)
+    - [Exemple complet:](#exemple-complet)
+  - [Organiser son dossier serveur avec les controllers](#organiser-son-dossier-serveur-avec-les-controllers)
+  - [Bonus : Le CRUD avec postgres](#bonus--le-crud-avec-postgres)
+  - [Conclusion :](#conclusion-)
+
+
 ## Présentation :
 
 > [Node](https://nodejs.org/) (ou plus formellement *Node.js*) est un environnement d'exécution open-source, multi-plateforme, qui permet aux développeuses et développeurs de créer toutes sortes d'applications et d'outils côté serveur en [JavaScript](https://developer.mozilla.org/fr/docs/Glossary/JavaScript)
@@ -459,8 +483,254 @@ myRouter.route('/livre')
 module.exports = myRouter;
 ```
 
+## Organiser son dossier serveur avec les controllers
+
+Par convention, les développeurs séparent toujours les routes créées et leurs callbacks respectifs pour une organisation optimale de leurs codes.
+
+Voici le chemin conventionnel pour les routes et leurs contrôleurs :
+
+```yaml
+node-project/                    # projet de premier niveau
+  src/                           # le code source de votre serveur
+    routes/                      # un dossier pour chaque collection de votre API
+      livres/                     # dossier pour la collection de flux de livres
+        livres.router.js           # routeur listant toutes les routes possibles pour les flux de livres
+        livres.controller.js       # contrôleur avec l'implémentation pour chaque route
+      users/                     # dossier pour la collection de flux d'utilisateurs
+        users.router.js           # routeur listant toutes les routes possibles pour les flux d'utilisateurs
+        users.controller.js       # contrôleur avec l'implémentation pour chaque route
+
+```
+
+Tout d'abord commençons par le contrôleur **livres.controller.js**, imaginons que l'on souhaite réaliser un CRUD en BDD, on va donc créer une constante pour chaque type de requête. Dans cette dernière nous ajouterons le callback correspondant :
+
+
+```jsx
+
+const getLivre = ((req, res) => {
+
+    // ici votre code pour récupèrer un livre 
+
+    res.send('On récupère un livre');
+})
+
+const createLivre = ((req, res) => {
+    // ici votre code pour ajouter un livre 
+
+    res.send('On ajoute un livre');
+})
+
+const updateLivre = ((req, res) => {
+
+    // ici votre code pour mettre à jour un livre 
+
+    res.send('On met à jour un livre');
+})
+
+const deleteLivre = ((req, res) => {
+    // ici votre code pour supprimer un livre 
+
+    res.send('On supprime un livre');
+})
+
+// puis on exporte les constantes
+
+module.exports = {
+    getLivre,
+    createLivre,
+    updateLivre,
+    deleteLivre
+}
+
+```
+
+Puis dans notre fichier de routes **livres.router.js**, on importe express, son router ainsi que les constantes créés dans le fichier **livres.controllers.js** : 
+
+
+```jsx
+const express = require('express');
+const myRouter = express.Router();
+
+
+const {
+    getLivre,
+    createLivre,
+    updateLivre,
+    deleteLivre
+} = require('./livres.controllers.js')
+
+```
+
+Ensuite, on ajoute les constantes correspondantes à chaque route :
+
+```jsx
+myRouter.route('/livre')
+    .get(getLivre)
+    .post(createLivre)
+    .put(updateLivre)
+    .delete(deleteLivre);
+
+
+module.exports = myRouter;
+
+```
+
+Enfin, on n'oublie pas d'importer notre route et de l'ajouter dans notre application (généralement dans votre fichier app.js) :
+
+```jsx
+
+const livres = require('./routes/livres/livres.router.js');
+
+app.use(livres);
+
+```
+
+## Bonus : Le CRUD avec postgres
+
+Votre fichier **database.js** : 
+
+```jsx
+const Pool = require("pg").Pool;
+
+const pool = new Pool({
+  user: "postgres",
+  password: "mdp",
+  host: "localhost",
+  port: 5432,
+  database: "biblio"
+});
+
+module.exports = pool;
+
+```
+
+Votre fichier **livres.controller.js** :
+
+```jsx
+
+const pool = require("../../database");
+
+const getAllLivres = ((req, res) => {
+
+    try {
+    
+        const livres = await pool.query("SELECT * FROM livre");
+
+        res.json(livres);
+    } catch (err) {
+        console.error(err.message);
+    }
+
+   
+})
+
+
+const getLivre = ((req, res) => {
+
+    try {
+        const { id } = req.params;
+        const livre = await pool.query("SELECT * FROM livre WHERE livre_id = $1", [
+        id
+        ]);
+
+        res.json(livre.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+    }
+
+   
+})
+
+const createLivre = ((req, res) => {
+    try {
+
+        const { titre } = req.body;
+        const newLivre = await pool.query(
+        "INSERT INTO livre (titre) VALUES($1) RETURNING *",
+        [titre]
+        );
+
+        res.json(newLivre.rows[0]);
+
+    } catch (err) {
+        console.error(err.message);
+    }
+
+   
+})
+
+const updateLivre = ((req, res) => {
+
+    try {
+        const { id } = req.params;
+        const { description } = req.body;
+        const updateLivre = await pool.query(
+        "UPDATE livre SET description = $1 WHERE livre_id = $2",
+        [description, id]
+        );
+
+        res.json("Livre mis à jour");
+    } catch (err) {
+        console.error(err.message);
+    }
+})
+
+const deleteLivre = ((req, res) => {
+   try {
+    const { id } = req.params;
+    const deleteLivre = await pool.query("DELETE FROM livre WHERE livre_id = $1", [
+      id
+    ]);
+    res.json("Livre supprimé");
+  } catch (err) {
+    console.log(err.message);
+  }
+})
+
+// puis on exporte les constantes
+
+module.exports = {
+    getLivre,
+    createLivre,
+    updateLivre,
+    deleteLivre
+}
+
+```
+
+Certaines routes nécessitent un id en param, il faut donc mettre à jour nos routes : 
+
+
+```jsx
+const express = require('express');
+const myRouter = express.Router();
+
+
+const {
+    getLivre,
+    getAllLivres,
+    createLivre,
+    updateLivre,
+    deleteLivre
+} = require('./livres.controllers.js')
+
+myRouter.route('/livre')
+    .get(getAllLivres)
+    .post(createLivre);
+
+
+myRouter.route('/livre/:id')
+    .get(getLivre)
+    .put(updateLivre)
+    .delete(deleteLivre);
+
+module.exports = myRouter;
+
+```
+
+
 ## Conclusion :
 
 Dans ce cours nous avons pris en main nodejs, au travers d’une utilisation basique.
 
-Par la suite nous regarderons comment réaliser un CRUD avec postgresql et la librairie pg.
+
