@@ -7,7 +7,7 @@
     - [Le code de réponse](#le-code-de-réponse)
   - [Fin de réponse](#fin-de-réponse)
   - [Résultat final](#résultat-final)
-  - [Étape 2 : Servir un fichier avec FS](#étape-2--servir-un-fichier-avec-fs)
+- [Étape 2 : Servir un fichier avec FS](#étape-2--servir-un-fichier-avec-fs)
   - [Le module FS](#le-module-fs)
   - [Lecture d’un fichier](#lecture-dun-fichier)
   - [Servir tous les fichiers](#servir-tous-les-fichiers)
@@ -17,10 +17,10 @@
   - [Traitement des différentes requêtes :](#traitement-des-différentes-requêtes-)
     - [Servir un dossier complet :](#servir-un-dossier-complet-)
   - [Un peu plus loin avec express …](#un-peu-plus-loin-avec-express-)
-  - [Les modules](#les-modules)
-    - [Exemple complet:](#exemple-complet)
-  - [Organiser son dossier serveur avec les controllers](#organiser-son-dossier-serveur-avec-les-controllers)
-  - [Bonus : Le CRUD avec postgres](#bonus--le-crud-avec-postgres)
+- [Les modules](#les-modules)
+  - [Exemple complet:](#exemple-complet)
+- [Organiser son dossier serveur avec les controllers](#organiser-son-dossier-serveur-avec-les-controllers)
+- [Bonus : Le CRUD avec postgres](#bonus--le-crud-avec-postgres)
   - [Conclusion :](#conclusion-)
 
 
